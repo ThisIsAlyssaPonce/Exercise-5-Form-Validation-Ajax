@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Validation with AJAX</title>
+    <title>Form Validation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -38,84 +38,95 @@
             color: #3c763d;
             border: 1px solid #d6e9c6;
         }
+        .error {
+            color: red;
+        }
         a {
             color: #0056b3;
             text-decoration: none;
-        }
-        .error {
-            color: red;
         }
     </style>
 </head>
 <body>
 
+
 <div class="container">
-    <!-- Register Message Container -->
+
     <div class="message-container">
         <h2>Register</h2>
         <form id="userForm">
+            <label for="name">Name:</label><br>
+            <input type="text" name="name" placeholder="Name" required><br><br>
+
+            <label for="age">Age:</label><br>
+            <input type="number" name="age" placeholder="Age" required><br><br>
+
+            <label for="gender">Gender:</label><br>
+            <select name="gender" required>
+				<option value="">Select Gender</option>
+				<option value="male">Male</option>
+				<option value="female">Female</option>
+				<option value="other">Other</option>
+			</select><br><br>
+
+            <label for="email">Email:</label><br>
+            <input type="email" name="email" placeholder="Email" required><br><br>
+
             <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username"><br><br>
-            <input type="submit" value="Submit">
+            <input type="text" name="username" placeholder="Username" required><br><br>
+
+            <button type="submit">Register</button>
         </form>
 
         <div id="registerMessage" class="error"></div>
     </div>
 
-    <!-- Current Usernames Message Container -->
+
     <div class="message-container">
-        <h2>Current Usernames</h2>
+        <h2>Registered Users</h2>
         <div id="usernamesContainer">
-            <!-- Fetched usernames will appear here -->
         </div>
     </div>
 </div>
 
 <script>
-    document.getElementById('userForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const registerMessageDiv = document.getElementById('registerMessage');
+    document.getElementById('userForm').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-        // Clear previous messages
-        registerMessageDiv.textContent = '';
+    const formData = new FormData(this);
 
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'submit.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                registerMessageDiv.innerHTML = xhr.responseText;
-                // Reload the usernames after form submission
-                fetchUsernames();
-            } else {
-                registerMessageDiv.textContent = 'An error occurred';
-            }
-        };
-
-        xhr.send('username=' + encodeURIComponent(username));
+    fetch('submit.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById('registerMessage').innerHTML = data;
+        fetchRegisteredUsers();
+    })
+    .catch(error => {
+        console.error('Error:', error);
     });
+});
 
-    // Function to fetch and display usernames
-    function fetchUsernames() {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'get_usernames.php', true);
 
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                document.getElementById('usernamesContainer').innerHTML = xhr.responseText;
-            } else {
-                document.getElementById('usernamesContainer').textContent = 'Could not fetch usernames';
-            }
-        };
+function fetchRegisteredUsers() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'get_users.php', true);
 
-        xhr.send();
-    }
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            document.getElementById('usernamesContainer').innerHTML = xhr.responseText;
+        } else {
+            document.getElementById('usernamesContainer').textContent = 'Could not fetch users';
+        }
+    };
 
-    // Fetch usernames on page load
-    fetchUsernames();
+    xhr.send();
+}
+
+
+fetchRegisteredUsers();
 </script>
 
 </body>
